@@ -62,7 +62,7 @@ def set_filters():
         By.XPATH,
         value="/html/body/div[1]/div[1]/div[1]/form/div/div[1]/div[3]/div[5]/div[2]/div/ul/li[4]",
     ).click()
-    
+
     # Set opportunity type
     for i in range(3, 9):
         driver.find_element(
@@ -71,14 +71,24 @@ def set_filters():
         ).click()
         driver.find_element(
             By.XPATH,
-            value=f'/html/body/div[1]/div[1]/div[1]/form/div/div[1]/div[3]/div[3]/div[2]/div/ul/li[{i}]',
+            value=f"/html/body/div[1]/div[1]/div[1]/form/div/div[1]/div[3]/div[3]/div[2]/div/ul/li[{i}]",
         ).click()
+
 
 def get_fellowship_url(num: int):
     try:
         return driver.find_element(
             By.XPATH,
             value=f"/html/body/div[1]/div[1]/div[1]/form/div/div[2]/div[2]/div[{num}]/h2/a",
+        ).get_attribute("href")
+    except NoSuchElementException:
+        return
+
+
+def get_organization_url():
+    try:
+        return driver.find_element(
+            By.XPATH, value="/html/body/div[1]/div[1]/div/main/div[2]/div[2]/div/a[1]"
         ).get_attribute("href")
     except NoSuchElementException:
         return
@@ -131,8 +141,8 @@ if __name__ == "__main__":
     driver.quit()
     urls = []
     get_all_urls(urls)
-    
-    
-    
+
+    df = pd.DataFrame
+
     for i in range(len(urls)):
-        
+        get_organization_url()
