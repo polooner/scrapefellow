@@ -1,9 +1,15 @@
+import math
+import traceback
+import logging
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.select import Select
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    ElementNotInteractableException,
+)
 import time
 
 usernameid = "liquidnewsstream@gmail.com"
@@ -57,37 +63,60 @@ def set_filters():
     ).click()
 
 
-def get_fellowship_name(num: int):
-    print(
-        driver.find_element(
+def get_fellowship_url(num: int):
+    try:
+        return driver.find_element(
             By.XPATH,
             value=f"/html/body/div[1]/div[1]/div[1]/form/div/div[2]/div[2]/div[{num}]/h2/a",
-        ).text
-    )
+        ).get_attribute("href")
+    except NoSuchElementException:
+        return
 
 
 def get_listings_number():
-    elements = driver.find_elements(By.CLASS_NAME, value="listing")
-    return len(elements)
+    num = driver.find_element(
+        By.XPATH,
+        value="/html/body/div[1]/div[1]/div[1]/form/div/div[2]/div[1]/div/div[1]/span",
+    ).text
+    return int(num.strip(","))
+
+
+def loop_until_no_result(urls):
+    curr_idx = 1
+    while get_fellowship_url(curr_idx) is not None:
+        urls.append(get_fellowship_url(curr_idx))
+        curr_idx += 1
 
 
 def click_next_button():
-    driver.find_element(
-        By.XPATH,
-        value="/html/body/div[1]/div[1]/div[1]/form/div/div[2]/div[3]/ul/li[2]/a",
-    ).click()
+    try:
+        driver.find_element(
+            By.XPATH,
+            value="/html/body/div[1]/div[1]/div[1]/form/div/div[2]/div[3]/ul/li[2]/a",
+        ).click()
+    except ElementNotInteractableException:
+        return
 
 
-if __name__ == "__main__":
+def get_all_urls():
     login(username=usernameid, password=passwordpin)
     set_filters()
     time.sleep(2)
-    for i in range(1, 51):
-        get_fellowship_name(i)
-    click_next_button()
-    time.sleep(1)
+    total_listings = get_listings_number()
+
+    urls = []
+    number_of_loops = math.ceil(total_listings / 50)
+    print(number_of_loops)
+    for i in range(number_of_loops):
+        print("--------------loop: ", i)
+        loop_until_no_result(urls=urls)
+        click_next_button()
+        driver.implicitly_wait(5)
+
+    print(urls)
+
+
+if __name__ == "__main__":
+    time.sleep(5)
     driver.quit()
-
-
-# progtype: list[str], diciplines: list[str], location: list[str], citizenship: list[str],
-# workxp: list[str]
+    get_all_urls()
