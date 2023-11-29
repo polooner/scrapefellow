@@ -1,6 +1,7 @@
 import math
 import traceback
 import logging
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -61,7 +62,17 @@ def set_filters():
         By.XPATH,
         value="/html/body/div[1]/div[1]/div[1]/form/div/div[1]/div[3]/div[5]/div[2]/div/ul/li[4]",
     ).click()
-
+    
+    # Set opportunity type
+    for i in range(3, 9):
+        driver.find_element(
+            By.XPATH,
+            value="/html/body/div[1]/div[1]/div[1]/form/div/div[1]/div[3]/div[3]/div[2]/ul/li/input",
+        ).click()
+        driver.find_element(
+            By.XPATH,
+            value=f'/html/body/div[1]/div[1]/div[1]/form/div/div[1]/div[3]/div[3]/div[2]/div/ul/li[{i}]',
+        ).click()
 
 def get_fellowship_url(num: int):
     try:
@@ -98,18 +109,17 @@ def click_next_button():
         return
 
 
-def get_all_urls():
+def get_all_urls(arr):
     login(username=usernameid, password=passwordpin)
     set_filters()
     time.sleep(2)
     total_listings = get_listings_number()
 
-    urls = []
     number_of_loops = math.ceil(total_listings / 50)
     print(number_of_loops)
     for i in range(number_of_loops):
         print("--------------loop: ", i)
-        loop_until_no_result(urls=urls)
+        loop_until_no_result(urls=arr)
         click_next_button()
         driver.implicitly_wait(5)
 
@@ -119,4 +129,10 @@ def get_all_urls():
 if __name__ == "__main__":
     time.sleep(5)
     driver.quit()
-    get_all_urls()
+    urls = []
+    get_all_urls(urls)
+    
+    
+    
+    for i in range(len(urls)):
+        
